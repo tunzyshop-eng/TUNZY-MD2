@@ -1,4 +1,7 @@
 node_modules/
 session/
+pairing-sessions/
+data/
 .env
+pair.env
 *.log
