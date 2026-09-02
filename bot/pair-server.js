@@ -37,7 +37,7 @@ async function createPairingSession(number) {
 
   let code = null;
   if (!state.creds.registered) {
-    await delay(1500);
+    await delay(3000);
     code = await sock.requestPairingCode(number);
   }
 
