@@ -123,11 +123,6 @@ async function startBot() {
         return;
       }
 
-      if (!isOwner(sender)) {
-        await sock.sendMessage(jid, { text: 'Only the owner can manage sudo.' }, { quoted: msg });
-        return;
-      }
-
       const target = (args[0] || '').replace(/[^0-9]/g, '');
 
       if (sub === 'add') {
@@ -141,6 +136,10 @@ async function startBot() {
       }
 
       if (sub === 'del') {
+        if (!isOwner(sender)) {
+          await sock.sendMessage(jid, { text: 'Only the owner can remove sudo.' }, { quoted: msg });
+          return;
+        }
         if (!target) {
           await sock.sendMessage(jid, { text: 'Usage: .sudo del 234XXXXXXXXXX' }, { quoted: msg });
           return;
