@@ -4,6 +4,7 @@ const {
   default: makeWASocket,
   useMultiFileAuthState,
   DisconnectReason,
+  fetchLatestWaWebVersion,
   fetchLatestBaileysVersion,
 } = require('@whiskeysockets/baileys');
 const pino = require('pino');
@@ -22,6 +23,16 @@ const ENV_SUDO_NUMBERS = (process.env.SUDO_NUMBERS || '')
   .filter(Boolean);
 
 const SESSION_PATH = path.join(__dirname, 'session');
+
+async function getWaVersion() {
+  try {
+    const { version } = await fetchLatestWaWebVersion({});
+    return version;
+  } catch (err) {
+    const { version } = await fetchLatestBaileysVersion();
+    return version;
+  }
+}
 
 function getAuthorizedList() {
   const dynamicSudo = loadSudo();
@@ -62,7 +73,7 @@ async function startBot() {
   restoreSessionIfNeeded();
 
   const { state, saveCreds } = await useMultiFileAuthState(SESSION_PATH);
-  const { version } = await fetchLatestBaileysVersion();
+  const version = await getWaVersion();
 
   const sock = makeWASocket({
     version,
