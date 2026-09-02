@@ -3,8 +3,6 @@ require('dotenv').config({ path: require('path').join(__dirname, '..', 'pair.env
 const {
   default: makeWASocket,
   useMultiFileAuthState,
-  fetchLatestWaWebVersion,
-  fetchLatestBaileysVersion,
   delay,
 } = require('baileys');
 const pino = require('pino');
@@ -20,28 +18,16 @@ const SESS_ROOT = path.join(__dirname, '..', 'pairing-sessions');
 
 if (!fs.existsSync(SESS_ROOT)) fs.mkdirSync(SESS_ROOT, { recursive: true });
 
-async function getWaVersion() {
-  try {
-    const { version } = await fetchLatestWaWebVersion({});
-    return version;
-  } catch (err) {
-    const { version } = await fetchLatestBaileysVersion();
-    return version;
-  }
-}
-
 async function createPairingSession(number) {
   const sessionDir = path.join(SESS_ROOT, `${number}-${Date.now()}`);
   fs.mkdirSync(sessionDir, { recursive: true });
 
   const { state, saveCreds } = await useMultiFileAuthState(sessionDir);
-  const version = await getWaVersion();
 
   const sock = makeWASocket({
-    version,
     auth: state,
     logger: pino({ level: 'silent' }),
-    browser: [BOT_NAME, 'Chrome', '1.0.0'],
+    browser: ['Ubuntu', 'Chrome', '120.0.0'],
   });
 
   sock.ev.on('creds.update', saveCreds);
