@@ -12,6 +12,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const QRCode = require('qrcode');
+const { PhoneNumber } = require('awesome-phonenumber');
 const { encodeSession } = require('./session');
 
 const BOT_NAME = process.env.BOT_NAME || 'TUNZY MD2';
@@ -39,6 +40,15 @@ setInterval(() => {
   }
 }, 60 * 1000);
 
+function isValidNumber(number) {
+  try {
+    const pn = new PhoneNumber('+' + number);
+    return pn.isValid();
+  } catch (e) {
+    return false;
+  }
+}
+
 async function createPairingSession(number) {
   const sessionDir = path.join(SESS_ROOT, `${number}-${Date.now()}`);
   fs.mkdirSync(sessionDir, { recursive: true });
@@ -48,7 +58,7 @@ async function createPairingSession(number) {
   const sock = makeWASocket({
     auth: state,
     logger: pino({ level: 'silent' }),
-    browser: ['Ubuntu', 'Chrome', '120.0.0'],
+    browser: ['Ubuntu', 'Chrome', '20.0.04'],
   });
 
   sock.ev.on('creds.update', saveCreds);
@@ -94,7 +104,7 @@ async function startQrSession() {
   const sock = makeWASocket({
     auth: state,
     logger: pino({ level: 'silent' }),
-    browser: ['Ubuntu', 'Chrome', '120.0.0'],
+    browser: ['Ubuntu', 'Chrome', '20.0.04'],
   });
 
   sock.ev.on('creds.update', saveCreds);
@@ -168,7 +178,8 @@ app.post('/pair', async (req, res) => {
     }
 
     const clean = number.replace(/[^0-9]/g, '');
-    if (clean.length < 8) {
+
+    if (!isValidNumber(clean)) {
       return res.status(400).json({ error: 'Enter a valid number with country code' });
     }
 
