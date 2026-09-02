@@ -3,6 +3,7 @@ require('dotenv').config({ path: require('path').join(__dirname, '..', 'pair.env
 const {
   default: makeWASocket,
   useMultiFileAuthState,
+  fetchLatestWaWebVersion,
   fetchLatestBaileysVersion,
   delay,
 } = require('@whiskeysockets/baileys');
@@ -19,12 +20,22 @@ const SESS_ROOT = path.join(__dirname, '..', 'pairing-sessions');
 
 if (!fs.existsSync(SESS_ROOT)) fs.mkdirSync(SESS_ROOT, { recursive: true });
 
+async function getWaVersion() {
+  try {
+    const { version } = await fetchLatestWaWebVersion({});
+    return version;
+  } catch (err) {
+    const { version } = await fetchLatestBaileysVersion();
+    return version;
+  }
+}
+
 async function createPairingSession(number) {
   const sessionDir = path.join(SESS_ROOT, `${number}-${Date.now()}`);
   fs.mkdirSync(sessionDir, { recursive: true });
 
   const { state, saveCreds } = await useMultiFileAuthState(sessionDir);
-  const { version } = await fetchLatestBaileysVersion();
+  const version = await getWaVersion();
 
   const sock = makeWASocket({
     version,
