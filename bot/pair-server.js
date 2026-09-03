@@ -3,6 +3,7 @@ require('dotenv').config({ path: require('path').join(__dirname, '..', 'pair.env
 const {
   default: makeWASocket,
   useMultiFileAuthState,
+  fetchLatestBaileysVersion,
   delay,
 } = require('baileys');
 const pino = require('pino');
@@ -54,18 +55,19 @@ async function createPairingSession(number) {
   fs.mkdirSync(sessionDir, { recursive: true });
 
   const { state, saveCreds } = await useMultiFileAuthState(sessionDir);
+  const { version } = await fetchLatestBaileysVersion();
 
   const sock = makeWASocket({
     auth: state,
+    version,
     logger: pino({ level: 'silent' }),
-    browser: ['Ubuntu', 'Chrome', '20.0.04'],
   });
 
   sock.ev.on('creds.update', saveCreds);
 
   let code = null;
   if (!state.creds.registered) {
-    await delay(3000);
+    await delay(1500);
     code = await sock.requestPairingCode(number);
   }
 
@@ -100,11 +102,12 @@ async function startQrSession() {
   fs.mkdirSync(sessionDir, { recursive: true });
 
   const { state, saveCreds } = await useMultiFileAuthState(sessionDir);
+  const { version } = await fetchLatestBaileysVersion();
 
   const sock = makeWASocket({
     auth: state,
+    version,
     logger: pino({ level: 'silent' }),
-    browser: ['Ubuntu', 'Chrome', '20.0.04'],
   });
 
   sock.ev.on('creds.update', saveCreds);
