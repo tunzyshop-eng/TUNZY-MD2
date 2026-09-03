@@ -13,7 +13,6 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const QRCode = require('qrcode');
-const { PhoneNumber } = require('awesome-phonenumber');
 const { encodeSession } = require('./session');
 
 const BOT_NAME = process.env.BOT_NAME || 'TUNZY MD2';
@@ -42,12 +41,7 @@ setInterval(() => {
 }, 60 * 1000);
 
 function isValidNumber(number) {
-  try {
-    const pn = new PhoneNumber('+' + number);
-    return pn.isValid();
-  } catch (e) {
-    return false;
-  }
+  return /^[0-9]{8,15}$/.test(number);
 }
 
 async function createPairingSession(number) {
